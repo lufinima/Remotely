@@ -37,6 +37,9 @@ namespace Remotely.Agent.Installer.Win.ViewModels
         private string _serverUrl;
 
         private string _statusMessage;
+        private string _deviceAlias;
+        private string _deviceGroup;
+
         public MainWindowViewModel()
         {
             Installer = new InstallerService();
@@ -189,9 +192,34 @@ namespace Remotely.Agent.Installer.Win.ViewModels
         public SolidColorBrush TitleButtonForegroundColor { get; set; }
         public SolidColorBrush TitleForegroundColor { get; set; }
         public ICommand UninstallCommand => new Executor(async (param) => { await Uninstall(); });
-        private string DeviceAlias { get; set; }
-        private string DeviceGroup { get; set; }
-        private string DeviceUuid { get; set; }
+        
+        public string DeviceAlias
+        {
+            get
+            {
+                return _deviceAlias;
+            }
+            set
+            {
+                _deviceAlias = value;
+                FirePropertyChanged();
+            }
+        }
+
+        public string DeviceGroup
+        {
+            get 
+            { 
+                return _deviceGroup; 
+            }
+            set
+            {
+                _deviceGroup = value;
+                FirePropertyChanged();
+            }
+        }
+
+        private string DeviceUuid { get; set; } = UniqueIdGenerator.GenerateID();
         private InstallerService Installer { get; }
         public async Task Init()
         {
@@ -396,7 +424,7 @@ namespace Remotely.Agent.Installer.Win.ViewModels
                     var codeSection = string.Join("", fileName.Skip(i).Take(codeLength));
 
                     if (codeSection.StartsWith("[") &&
-                        codeSection.EndsWith("]") && 
+                        codeSection.EndsWith("]") &&
                         !string.IsNullOrWhiteSpace(ServerUrl))
                     {
                         var relayCode = codeSection.Substring(1, 4);
@@ -424,7 +452,7 @@ namespace Remotely.Agent.Installer.Win.ViewModels
                         {
                             var responseString = await response.Content.ReadAsStringAsync();
                             _brandingInfo = serializer.Deserialize<BrandingInfo>(responseString);
-                            
+
                         }
                     }
                 }

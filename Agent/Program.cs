@@ -90,6 +90,7 @@ namespace Remotely.Agent
 
         private static async Task Init()
         {
+            Logger.Write($"Agent Init");
             try
             {
                 AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
@@ -128,6 +129,7 @@ namespace Remotely.Agent
             var assemblyPath = System.Reflection.Assembly.GetExecutingAssembly().Location;
             var assemblyDir = Path.GetDirectoryName(assemblyPath);
             Directory.SetCurrentDirectory(assemblyDir);
+            Logger.Write($"Agent CurrentDirectory: {assemblyDir}");
         }
     }
 }

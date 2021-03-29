@@ -28,6 +28,8 @@ namespace Remotely.Desktop.Win.ViewModels
         private string _host;
         private string _sessionId;
         private string _statusMessage;
+        private string _alias;
+        private string _group;
 
         public MainWindowViewModel()
         {
@@ -145,6 +147,26 @@ namespace Remotely.Desktop.Win.ViewModels
             }
         }
 
+        public string Alias
+        {
+            get => _alias;
+            set
+            {
+                _alias = value;
+                FirePropertyChanged();
+            }
+        }
+
+        public string Group
+        {
+            get => _group;
+            set
+            {
+                _group = value;
+                FirePropertyChanged();
+            }
+        }
+
         public bool IsAdministrator => new WindowsPrincipal(WindowsIdentity.GetCurrent()).IsInRole(WindowsBuiltInRole.Administrator);
 
         public ICommand RemoveViewersCommand
@@ -185,13 +207,13 @@ namespace Remotely.Desktop.Win.ViewModels
 
         public async Task GetSessionID()
         {
-            await _casterSocket.SendDeviceInfo(_conductor.ServiceID, Environment.MachineName, _conductor.DeviceID);
-            var sessionId = await _casterSocket.GetSessionID();
+            await _casterSocket.SendDeviceInfo(_conductor.ServiceID, Environment.MachineName, _conductor.DeviceID, _conductor.DeviceAlias, _conductor.DeviceGroup);
+            var sessionId = await _casterSocket.GetSessionID(_conductor.DeviceID);
 
             var formattedSessionID = "";
-            for (var i = 0; i < sessionId.Length; i += 3)
+            if (uint.TryParse(sessionID, out var id))
             {
-                formattedSessionID += sessionId.Substring(i, 3) + " ";
+                formattedSessionID = id.ToString("### ### ### ###");
             }
 
             App.Current?.Dispatcher?.Invoke(() =>
@@ -206,14 +228,20 @@ namespace Remotely.Desktop.Win.ViewModels
             StatusMessage = "Retrieving...";
 
             Host = _configService.GetConfig().Host;
+            Alias = _configService.GetConfig().DeviceAlias;
+            Group = _configService.GetConfig().DeviceGroup;
 
-            while (string.IsNullOrWhiteSpace(Host))
+            while (string.IsNullOrWhiteSpace(Host) || string.IsNullOrEmpty(Alias))
             {
-                Host = "https://";
+                if (string.IsNullOrWhiteSpace(Host))
+                {
+                    Host = "https://";
+                }
+
                 PromptForHostName();
             }
 
-            _conductor.ProcessArgs(new string[] { "-mode", "Normal", "-host", Host });
+            _conductor.ProcessArgs(new string[] { "-mode", "Normal", "-host", Host, "-alias", Alias, "-group", Group });
 
             try
             {
@@ -272,10 +300,18 @@ namespace Remotely.Desktop.Win.ViewModels
             {
                 prompt.ViewModel.Host = Host;
             }
+            if (!string.IsNullOrWhiteSpace(Alias))
+            {
+                prompt.ViewModel.Alias = Alias;
+            }
 
             prompt.Owner = App.Current?.MainWindow;
             prompt.ShowDialog();
             var result = prompt.ViewModel.Host?.Trim()?.TrimEnd('/');
+            if (!result.StartsWith("https://") && !result.StartsWith("http://"))
+            {
+                result = $"https://{result}";
+            }
 
             if (!Uri.TryCreate(result, UriKind.Absolute, out var serverUri) ||
                 (serverUri.Scheme != Uri.UriSchemeHttp && serverUri.Scheme != Uri.UriSchemeHttps))
@@ -285,9 +321,23 @@ namespace Remotely.Desktop.Win.ViewModels
                 return;
             }
 
+            var alias = prompt.ViewModel.Alias?.Trim();
+            if (alias != Alias)
+            {
+                Alias = alias;
+            }
+
+            var group = prompt.ViewModel.Group?.Trim();
+            if (group != Group)
+            {
+                Group = group;
+            }
+
             Host = result;
             var config = _configService.GetConfig();
             config.Host = Host;
+            config.DeviceAlias = Alias;
+            config.DeviceGroup = Group;
             _configService.Save(config);
         }
 

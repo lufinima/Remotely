@@ -79,11 +79,35 @@ namespace Remotely.Desktop.Core.Services
                                 config.OrganizationId = organizationId;
                                 _configService.Save(config);
 
+                                if (!string.IsNullOrEmpty(organizationId) && string.IsNullOrEmpty(_conductor.OrganizationId))
+                                {
+                                    _conductor.UpdateOrganizationId(organizationId);
+                                }
+
                                 var brandingUrl = $"{config.Host.TrimEnd('/')}/api/branding/{config.OrganizationId}";
                                 _brandingInfo = await httpClient.GetFromJsonAsync<BrandingInfo>(brandingUrl).ConfigureAwait(false);
                                 return;
                             }
                         }
+                    }
+                } else
+                {
+                    using var response = await httpClient.GetAsync($"{host.TrimEnd('/')}/api/Relay/Default").ConfigureAwait(false);
+                    if (response.IsSuccessStatusCode)
+                    {
+                        var organizationId = await response.Content.ReadAsStringAsync();
+                        config.Host = host;
+                        config.OrganizationId = organizationId;
+                        _configService.Save(config);
+
+                        if (!string.IsNullOrEmpty(organizationId) && string.IsNullOrEmpty(_conductor.OrganizationId))
+                        {
+                            _conductor.UpdateOrganizationId(organizationId);
+                        }
+
+                        var brandingUrl = $"{config.Host.TrimEnd('/')}/api/branding/{config.OrganizationId}";
+                        _brandingInfo = await httpClient.GetFromJsonAsync<BrandingInfo>(brandingUrl).ConfigureAwait(false);
+                        return;
                     }
                 }
                 

@@ -11,6 +11,13 @@ namespace Remotely.Desktop.Win.Views
         public HostNamePrompt()
         {
             InitializeComponent();
+#if !DEBUG
+            if (!string.IsNullOrEmpty(ViewModel.Host))
+            {
+                HostLabel.Visibility = Visibility.Collapsed;
+                HostTextBox.Visibility = Visibility.Collapsed;
+            }
+#endif
         }
 
         public HostNamePromptViewModel ViewModel => DataContext as HostNamePromptViewModel;

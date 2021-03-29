@@ -17,8 +17,8 @@ namespace Remotely.Desktop.Win.Services
         {
             var config = new DesktopAppConfig();
 
-            if (string.IsNullOrWhiteSpace(config.Host) &&
-                File.Exists(_configFile))
+            if ((string.IsNullOrWhiteSpace(config.Host) || string.IsNullOrWhiteSpace(config.DeviceAlias))
+                && File.Exists(_configFile))
             {
                 try
                 {

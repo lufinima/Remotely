@@ -176,6 +176,7 @@ namespace Remotely.Server
             services.AddScoped<IClientAppState, ClientAppState>();
             services.AddScoped<IExpiringTokenService, ExpiringTokenService>();
             services.AddScoped<IScriptScheduleDispatcher, ScriptScheduleDispatcher>();
+            services.AddScoped<IPerfexCrmService, PerfexCrmService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -205,7 +206,7 @@ namespace Remotely.Server
                 }
             }
 
-            app.UseMiddleware<ClickOnceMiddleware>();
+            //app.UseMiddleware<ClickOnceMiddleware>();
 
             ConfigureStaticFiles(app, env);
 

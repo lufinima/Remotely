@@ -36,6 +36,9 @@ namespace Remotely.Server.Services
         string[] TrustedCorsOrigins { get; }
         bool UseHsts { get; }
         bool UseWebRtc { get; }
+        string PerfexApiUrl { get; }
+        string PerfexApiKey { get; }
+        string PerfexRemotelyFieldId { get; }
     }
 
     public class ApplicationConfig : IApplicationConfig
@@ -80,6 +83,10 @@ namespace Remotely.Server.Services
         public string[] TrustedCorsOrigins => Config.GetSection("ApplicationOptions:TrustedCorsOrigins").Get<string[]>() ?? System.Array.Empty<string>();
         public bool UseHsts => bool.Parse(Config["ApplicationOptions:UseHsts"] ?? "false");
         public bool UseWebRtc => bool.Parse(Config["ApplicationOptions:UseWebRtc"] ?? "true");
+        public string PerfexApiUrl => Config["ApplicationOptions:PerfexApiUrl"];
+        public string PerfexApiKey => Config["ApplicationOptions:PerfexApiKey"];
+        public string PerfexRemotelyFieldId => Config["ApplicationOptions:PerfexRemotelyFieldId"];
+
         private IConfiguration Config { get; set; }
     }
 }

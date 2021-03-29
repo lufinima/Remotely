@@ -15,7 +15,8 @@ namespace Remotely.Agent.Services
 
     public class AppLauncherWin : IAppLauncher
     {
-        private readonly string _rcBinaryPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Desktop", EnvironmentHelper.DesktopExecutableFileName);
+        private static string _rcBinaryPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, EnvironmentHelper.DesktopExecutableFileName);
+        private static string _rcDllPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Remotely_Desktop.dll");
 
         public AppLauncherWin(ConfigService configService)
         {
@@ -152,6 +153,14 @@ namespace Remotely.Agent.Services
         }
         public async Task RestartScreenCaster(List<string> viewerIDs, string serviceID, string requesterID, HubConnection hubConnection, int targetSessionID = -1)
         {
+            if (!File.Exists(_rcBinaryPath))
+            {
+                if (File.Exists(_rcDllPath))
+                {
+                    _rcBinaryPath = _rcDllPath;
+                }
+            }
+
             try
             {
                 // Start Desktop app.                 

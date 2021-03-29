@@ -2,7 +2,7 @@
 HostName=
 Organization=
 #GUID=$(cat /proc/sys/kernel/random/uuid)
-UpdatePackagePath=""
+ETag=
 
 
 Args=( "$@" )
@@ -17,20 +17,29 @@ do
         systemctl daemon-reload
         exit
     elif [ "${Args[$i]}" = "--path" ]; then
-        UpdatePackagePath="${Args[$i+1}"
+        UpdatePackagePath="${Args[$i+1]}"
     fi
 done
 
-pacman -Sy
-pacman -S dotnet-runtime-6.0 --noconfirm
-pacman -S libx11 --noconfirm
-pacman -S unzip --noconfirm
-pacman -S libc6 --noconfirm
-pacman -S libgdiplus --noconfirm
-pacman -S libxtst --noconfirm
-pacman -S xclip --noconfirm
-pacman -S jq --noconfirm
-pacman -S curl --noconfirm
+UbuntuVersion=$(lsb_release -r -s)
+
+wget -q https://packages.microsoft.com/config/ubuntu/$UbuntuVersion/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
+dpkg -i packages-microsoft-prod.deb
+apt-get update
+apt-get -y install apt-transport-https
+apt-get update
+apt-get -y install dotnet-runtime-3.1
+rm packages-microsoft-prod.deb
+
+apt-get -y install libx11-dev
+apt-get -y install unzip
+apt-get -y install libc6-dev
+apt-get -y install libgdiplus
+apt-get -y install libxtst-dev
+apt-get -y install xclip
+apt-get -y install jq
+apt-get -y install curl
+
 
 #if [ -f "/usr/local/bin/Remotely/ConnectionInfo.json" ]; then
 #    GUID=`cat "/usr/local/bin/Remotely/ConnectionInfo.json" | jq -r '.DeviceID'`
@@ -42,17 +51,15 @@ rm -f /etc/systemd/system/remotely-agent.service
 mkdir -p /usr/local/bin/Remotely/
 cd /usr/local/bin/Remotely/
 
-if [ -z "$UpdatePackagePath" ]; then
-    echo  "Downloading client..." >> /tmp/Remotely_Install.log
-    wget $HostName/Content/Remotely-Linux.zip
+if [ -z "$AppRoot" ]; then
+    echo  "Downloading client..."
+    wget $HostName/Downloads/Remotely-Linux.zip
 else
-    echo  "Copying install files..." >> /tmp/Remotely_Install.log
-    cp "$UpdatePackagePath" /usr/local/bin/Remotely/Remotely-Linux.zip
-    rm -f "$UpdatePackagePath"
+    echo  "Copying install files..."
+    cp "$AppRoot" /usr/local/bin/Remotely/Remotely-Linux.zip
 fi
 
 unzip ./Remotely-Linux.zip
-rm -f ./Remotely-Linux.zip
 chmod +x ./Remotely_Agent
 chmod +x ./Desktop/Remotely_Desktop
 
@@ -66,9 +73,9 @@ chmod +x ./Desktop/Remotely_Desktop
 
 #echo "$connectionInfo" > ./ConnectionInfo.json
 
-curl --head $HostName/Content/Remotely-Linux.zip | grep -i "etag" | cut -d' ' -f 2 > ./etag.txt
+curl --head $HostName/Downloads/Remotely-Linux.zip | grep -i "etag" | cut -d' ' -f 2 > ./etag.txt
 
-echo Creating service... >> /tmp/Remotely_Install.log
+echo Creating service...
 
 serviceConfig="[Unit]
 Description=The Remotely agent used for remote access.
@@ -88,4 +95,4 @@ echo "$serviceConfig" > /etc/systemd/system/remotely-agent.service
 systemctl enable remotely-agent
 systemctl restart remotely-agent
 
-echo Install complete. >> /tmp/Remotely_Install.log
+echo Install complete.

@@ -1,7 +1,7 @@
 #!/bin/bash
 HostName=
 Organization=
-GUID=$(cat /proc/sys/kernel/random/uuid)
+#GUID=$(cat /proc/sys/kernel/random/uuid)
 UpdatePackagePath=""
 
 
@@ -42,12 +42,9 @@ apt-get -y install jq
 apt-get -y install curl
 
 
-if [ -f "/usr/local/bin/Remotely/ConnectionInfo.json" ]; then
-    SavedGUID=`cat "/usr/local/bin/Remotely/ConnectionInfo.json" | jq -r '.DeviceID'`
-     if [[ "$SavedGUID" != "null" && -n "$SavedGUID" ]]; then
-        GUID="$SavedGUID"
-    fi
-fi
+#if [ -f "/usr/local/bin/Remotely/ConnectionInfo.json" ]; then
+#    GUID=`cat "/usr/local/bin/Remotely/ConnectionInfo.json" | jq -r '.DeviceID'`
+#fi
 
 rm -r -f /usr/local/bin/Remotely
 rm -f /etc/systemd/system/remotely-agent.service
@@ -70,14 +67,14 @@ chmod +x ./Remotely_Agent
 chmod +x ./Desktop/Remotely_Desktop
 
 
-connectionInfo="{
-    \"DeviceID\":\"$GUID\", 
-    \"Host\":\"$HostName\",
-    \"OrganizationID\": \"$Organization\",
-    \"ServerVerificationToken\":\"\"
-}"
+#connectionInfo="{
+#    \"DeviceID\":\"$GUID\", 
+#    \"Host\":\"$HostName\",
+#    \"OrganizationID\": \"$Organization\",
+#    \"ServerVerificationToken\":\"\"
+#}"
 
-echo "$connectionInfo" > ./ConnectionInfo.json
+#echo "$connectionInfo" > ./ConnectionInfo.json
 
 curl --head $HostName/Content/Remotely-Linux.zip | grep -i "etag" | cut -d' ' -f 2 > ./etag.txt
 

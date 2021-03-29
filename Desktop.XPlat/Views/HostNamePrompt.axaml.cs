@@ -19,6 +19,13 @@ namespace Remotely.Desktop.XPlat.Views
         private void InitializeComponent()
         {
             AvaloniaXamlLoader.Load(this);
+#if !DEBUG
+            if (!string.IsNullOrEmpty(ViewModel.Host))
+            {
+                this.FindControl<TextBlock>("HostLabel").IsVisible = false;
+                this.FindControl<TextBox>("HostTextBox").IsVisible = false;
+            }
+#endif
         }
     }
 }

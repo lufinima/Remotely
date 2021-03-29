@@ -6,6 +6,7 @@ using Remotely.Shared.Models;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Remotely.Server.Hubs
@@ -19,7 +20,8 @@ namespace Remotely.Server.Hubs
         public CasterHub(ICircuitManager circuitManager,
             IHubContext<ViewerHub> viewerHubContext,
             IHubContext<AgentHub> agentHubContext,
-            IApplicationConfig appConfig)
+            IApplicationConfig appConfig,
+            IDataService dataService)
         {
             _circuitManager = circuitManager;
             ViewerHubContext = viewerHubContext;
@@ -61,21 +63,16 @@ namespace Remotely.Server.Hubs
             return _appConfig.IceServers;
         }
 
-        public string GetSessionID()
+        public Task GetSessionID(string deviceId)
         {
-            var random = new Random();
-            var sessionId = "";
-
-            while (string.IsNullOrWhiteSpace(sessionId) ||
-                SessionInfoList.ContainsKey(sessionId))
-            {
-                for (var i = 0; i < 3; i++)
-                {
-                    sessionId += random.Next(0, 999).ToString().PadLeft(3, '0');
-                }
-            }
-            
-            Context.Items["SessionID"] = sessionId;
+            //var random = new Random();
+            //var sessionID = "";
+            //for (var i = 0; i < 3; i++)
+            //{
+            //    sessionID += random.Next(0, 999).ToString().PadLeft(3, '0');
+            //}
+            var sessionID = deviceId;
+            Context.Items["SessionID"] = sessionID;
 
             SessionInfoList[Context.ConnectionId].AttendedSessionID = sessionId;
 
@@ -123,11 +120,15 @@ namespace Remotely.Server.Hubs
             await base.OnDisconnectedAsync(exception);
         }
 
-        public Task ReceiveDeviceInfo(string serviceID, string machineName, string deviceID)
+        public Task ReceiveDeviceInfo(string serviceID, string machineName, string deviceID, string deviceAlias, string deviceGroup)
         {
             SessionInfo.ServiceID = serviceID;
             SessionInfo.MachineName = machineName;
             SessionInfo.DeviceID = deviceID;
+            if (!string.IsNullOrEmpty(deviceAlias))
+            {
+                DataService.UpdateDeviceAlias(deviceID, deviceAlias, deviceGroup);
+            }
             return Task.CompletedTask;
         }
 
@@ -181,5 +182,19 @@ namespace Remotely.Server.Hubs
             ViewerList.Add(viewerConnectionId);
             return Task.CompletedTask;
         }
+
+        //public Task DeviceCameOnline(Device device)
+        //{
+        //    var ip = Context.GetHttpContext()?.Connection?.RemoteIpAddress;
+        //    if (ip != null && ip.IsIPv4MappedToIPv6)
+        //    {
+        //        ip = ip.MapToIPv4();
+        //    }
+        //    device.PublicIP = ip?.ToString();
+
+        //    DataService.AddOrUpdateDevice(device, out var updatedDevice);
+
+        //    return Clients.Caller.SendAsync("DeviceCameOnline", updatedDevice);
+        //}
     }
 }

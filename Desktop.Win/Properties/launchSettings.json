@@ -1,7 +1,8 @@
 {
   "profiles": {
     "Desktop.Win": {
-      "commandName": "Project"
+      "commandName": "Project",
+      "nativeDebugging": false
     }
   }
 }

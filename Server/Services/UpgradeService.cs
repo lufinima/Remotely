@@ -32,12 +32,12 @@ namespace Remotely.Server.Services
             try
             {
                 using var client = _httpClientFactory.CreateClient();
-                var response = await client.GetAsync("https://github.com/lucent-sea/Remotely/releases/latest");
+                var response = await client.GetAsync("https://github.com/lufinima/Remotely/releases/latest");
                 var versionString = response.RequestMessage.RequestUri.ToString().Split("/").Last()[1..];
-                var remoteVersion = Version.Parse(versionString);
+                _ = Version.TryParse(versionString, out var remoteVersion);
                 var filePath = Directory.GetFiles(Directory.GetCurrentDirectory(), "Remotely_Server.dll", SearchOption.AllDirectories).First();
                 var localVersion = Version.Parse(System.Diagnostics.FileVersionInfo.GetVersionInfo(filePath).FileVersion);
-                if (remoteVersion > localVersion)
+                if (remoteVersion != null && remoteVersion > localVersion)
                 {
                     return true;
                 }

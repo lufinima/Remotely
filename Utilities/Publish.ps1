@@ -96,10 +96,14 @@ if ($Hostname) {
             return
     }
 
-    Replace-LineInFile -FilePath "$Root\Agent.Installer.Win\ViewModels\MainWindowViewModel.cs" -MatchPattern "private string _serverUrl" -ReplaceLineWith "private string _serverUrl = `"$($Hostname)`";" -MaxCount 1
-    Replace-LineInFile -FilePath "$Root\Shared\Models\DesktopAppConfig.cs" -MatchPattern "private string _host" -ReplaceLineWith "private string _host = `"$($Hostname)`";" -MaxCount 1
-    Replace-LineInFile -FilePath "$Root\Desktop.Win\Properties\PublishProfiles\ClickOnce-x64.pubxml" -MatchPattern "<InstallUrl>" -ReplaceLineWith "    <InstallUrl>$Hostname/Content/Win-x64/ClickOnce/</InstallUrl>"
-    Replace-LineInFile -FilePath "$Root\Desktop.Win\Properties\PublishProfiles\ClickOnce-x86.pubxml" -MatchPattern "<InstallUrl>" -ReplaceLineWith "    <InstallUrl>$Hostname/Content/Win-x86/ClickOnce/</InstallUrl>"
+    Replace-LineInFile -FilePath "$Root\Shared\Models\DesktopAppConfig.cs" -MatchPattern "private string _host" -ReplaceLineWith "        private string _host = `"$($Hostname)`";" -MaxCount 1
+    Replace-LineInFile -FilePath "$Root\Agent.Installer.Win\ViewModels\MainWindowViewModel.cs" -MatchPattern "private string _serverUrl" -ReplaceLineWith "        private string _serverUrl = `"$($Hostname)`";" -MaxCount 1
+    Replace-LineInFile -FilePath "$Root\Desktop.Win\Properties\PublishProfiles\ClickOnce-x64.pubxml" -MatchPattern "<InstallUrl>" -ReplaceLineWith "    <InstallUrl>$Hostname/Downloads/Win-x64/ClickOnce/</InstallUrl>"
+    Replace-LineInFile -FilePath "$Root\Desktop.Win\Properties\PublishProfiles\ClickOnce-x86.pubxml" -MatchPattern "<InstallUrl>" -ReplaceLineWith "    <InstallUrl>$Hostname/Downloads/Win-x86/ClickOnce/</InstallUrl>"
+    Replace-LineInFile -FilePath "$Root\Desktop.Win\Properties\PublishProfiles\packaged-win-x64.pubxml" -MatchPattern "<PublishDir>" -ReplaceLineWith "    <PublishDir>..\Agent\bin\Release\net6.0\win10-x64\publish</PublishDir>"
+    Replace-LineInFile -FilePath "$Root\Desktop.Win\Properties\PublishProfiles\packaged-win-x86.pubxml" -MatchPattern "<PublishDir>" -ReplaceLineWith "    <PublishDir>..\Agent\bin\Release\net6.0\win10-x86\publish</PublishDir>"
+    Replace-LineInFile -FilePath "$Root\Desktop.Linux\Properties\PublishProfiles\packaged-linux-x64.pubxml" -MatchPattern "<PublishDir>" -ReplaceLineWith "    <PublishDir>..\Agent\bin\Release\net6.0\linux-x64\publish</PublishDir>"
+    Replace-LineInFile -FilePath "$Root\Shared\Models\ConnectionInfo.cs" -MatchPattern "private string _host;" -ReplaceLineWith "        private string _host = `"$($Hostname)`";" -MaxCount 1
 }
 else {
     Write-Warning "`nNo hostname parameter was specified.  The server name will need to be entered manually in the desktop client.`n"
@@ -123,28 +127,29 @@ dotnet publish /p:Version=$CurrentVersion /p:FileVersion=$CurrentVersion --runti
 dotnet publish /p:Version=$CurrentVersion /p:FileVersion=$CurrentVersion --runtime linux-x64 --self-contained --configuration Release --output "$Root\Agent\bin\Release\net6.0\linux-x64\publish" "$Root\Agent"
 dotnet publish /p:Version=$CurrentVersion /p:FileVersion=$CurrentVersion --runtime win10-x86 --self-contained --configuration Release --output "$Root\Agent\bin\Release\net6.0\win10-x86\publish" "$Root\Agent"
 
-New-Item -Path "$Root\Agent\bin\Release\net6.0\win10-x64\publish\Desktop\" -ItemType Directory -Force
-New-Item -Path "$Root\Agent\bin\Release\net6.0\win10-x86\publish\Desktop\" -ItemType Directory -Force
-New-Item -Path "$Root\Agent\bin\Release\net6.0\linux-x64\publish\Desktop\" -ItemType Directory -Force
+# New-Item -Path "$Root\Agent\bin\Release\net6.0\win10-x64\publish\Desktop\" -ItemType Directory -Force
+# New-Item -Path "$Root\Agent\bin\Release\net6.0\win10-x86\publish\Desktop\" -ItemType Directory -Force
+# New-Item -Path "$Root\Agent\bin\Release\net6.0\linux-x64\publish\Desktop\" -ItemType Directory -Force
 
 
 # Publish Linux ScreenCaster
 dotnet publish /p:Version=$CurrentVersion /p:FileVersion=$CurrentVersion -p:PublishProfile=packaged-linux-x64 --configuration Release "$Root\Desktop.XPlat\"
 
 # Publish Linux GUI App
-dotnet publish /p:Version=$CurrentVersion /p:FileVersion=$CurrentVersion -p:PublishProfile=desktop-linux-x64 --configuration Release "$Root\Desktop.XPlat\"
+# dotnet publish /p:Version=$CurrentVersion /p:FileVersion=$CurrentVersion -p:PublishProfile=desktop-linux-x64 --configuration Release "$Root\Desktop.XPlat\"
 
 
 # Publish Windows ScreenCaster (32-bit)
-dotnet publish /p:Version=$CurrentVersion /p:FileVersion=$CurrentVersion -p:PublishProfile=packaged-win-x86 --configuration Release "$Root\Desktop.Win"
+# dotnet publish /p:Version=$CurrentVersion /p:FileVersion=$CurrentVersion -p:PublishProfile=packaged-win-x86 --configuration Release "$Root\Desktop.Win"
 
 # Publish Windows ScreenCaster (64-bit)
-dotnet publish /p:Version=$CurrentVersion /p:FileVersion=$CurrentVersion -p:PublishProfile=packaged-win-x64 --configuration Release "$Root\Desktop.Win"
+# dotnet publish /p:Version=$CurrentVersion /p:FileVersion=$CurrentVersion -p:PublishProfile=packaged-win-x64 --configuration Release "$Root\Desktop.Win"
 
 
 # Publish Windows GUI App (64-bit)
-dotnet publish /p:Version=$CurrentVersion /p:FileVersion=$CurrentVersion -p:PublishProfile=desktop-win-x64 --configuration Release "$Root\Desktop.Win"
-&"$MSBuildPath" "$Root\Desktop.Win" -t:Restore -t:Publish -p:PublishProfile="ClickOnce-x64.pubxml" -p:Configuration=Release -p:Platform=x64 -p:ApplicationVersion=$CurrentVersion -p:Version=$CurrentVersion -p:FileVersion=$CurrentVersion -p:PublishDir="$Root\Server\wwwroot\Content\Win-x64\ClickOnce\"
+# dotnet publish /p:Version=$CurrentVersion /p:FileVersion=$CurrentVersion -p:PublishProfile=desktop-win-x64 --configuration Release "$Root\Desktop.Win"
+dotnet publish /p:Version=$CurrentVersion /p:FileVersion=$CurrentVersion -p:PublishProfile=packaged-win-x64 --configuration Release "$Root\Desktop.Win"
+# &"$MSBuildPath" "$Root\Desktop.Win" -t:Restore -t:Publish -p:PublishProfile="ClickOnce-x64.pubxml" -p:Configuration=Release -p:Platform=x64 -p:ApplicationVersion=$CurrentVersion -p:Version=$CurrentVersion -p:FileVersion=$CurrentVersion -p:PublishDir="$Root\Server\wwwroot\Content\Win-x64\ClickOnce\"
 
 if ($SignAssemblies) {
     &"$Root\Utilities\signtool.exe" sign /f "$CertificatePath" /p $CertificatePassword /t http://timestamp.digicert.com "$Root\Server\wwwroot\Content\Win-x64\Remotely_Desktop.exe"
@@ -152,8 +157,9 @@ if ($SignAssemblies) {
 
 
 # Publish Windows GUI App (32-bit)
-dotnet publish /p:Version=$CurrentVersion /p:FileVersion=$CurrentVersion -p:PublishProfile=desktop-win-x86 --configuration Release "$Root\Desktop.Win"
-&"$MSBuildPath" "$Root\Desktop.Win" -t:Restore -t:Publish -p:PublishProfile="ClickOnce-x86.pubxml" -p:Configuration=Release -p:Platform=x86 -p:ApplicationVersion=$CurrentVersion -p:Version=$CurrentVersion -p:FileVersion=$CurrentVersion -p:PublishDir="$Root\Server\wwwroot\Content\Win-x86\ClickOnce\"
+# dotnet publish /p:Version=$CurrentVersion /p:FileVersion=$CurrentVersion -p:PublishProfile=desktop-win-x86 --configuration Release "$Root\Desktop.Win"
+dotnet publish /p:Version=$CurrentVersion /p:FileVersion=$CurrentVersion -p:PublishProfile=packaged-win-x86 --configuration Release "$Root\Desktop.Win"
+# &"$MSBuildPath" "$Root\Desktop.Win" -t:Restore -t:Publish -p:PublishProfile="ClickOnce-x86.pubxml" -p:Configuration=Release -p:Platform=x86 -p:ApplicationVersion=$CurrentVersion -p:Version=$CurrentVersion -p:FileVersion=$CurrentVersion -p:PublishDir="$Root\Server\wwwroot\Content\Win-x86\ClickOnce\"
 
 if ($SignAssemblies) {
     &"$Root\Utilities\signtool.exe" sign /f "$CertificatePath" /p $CertificatePassword /t http://timestamp.digicert.com "$Root\Server\wwwroot\Content\Win-x86\Remotely_Desktop.exe"
@@ -194,9 +200,12 @@ Move-Item -Path "$PublishDir\Remotely-Linux.zip" -Destination "$Root\Server\wwwr
 if ($RID.Length -gt 0 -and $OutDir.Length -gt 0) {
     if ((Test-Path -Path $OutDir) -eq $false){
         New-Item -Path $OutDir -ItemType Directory
+    } else {
+        Get-ChildItem -Path $OutDir | Remove-Item -Force -Recurse
     }
 
     dotnet publish /p:Version=$CurrentVersion /p:FileVersion=$CurrentVersion --runtime $RID --self-contained --configuration Release --output $OutDir "$Root\Server\"
+    # Compress-Archive -Path "$OutDir\*" -DestinationPath "$Root\Remotely_Server_$RID.zip" -Force
 }
 else {
     Write-Host "`nSkipping server deployment.  Params -outdir and -rid not specified." -ForegroundColor DarkYellow

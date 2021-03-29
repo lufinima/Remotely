@@ -3,6 +3,7 @@ using Microsoft.VisualBasic.FileIO;
 using Microsoft.Win32;
 using Remotely.Agent.Installer.Win.Utilities;
 using Remotely.Shared.Models;
+using Remotely.Shared.Utilities;
 using System;
 using System.Configuration.Install;
 using System.Diagnostics;
@@ -67,7 +68,8 @@ namespace Remotely.Agent.Installer.Win.Services
 
                 CreateUninstallKey();
 
-                CreateSupportShortcut(serverUrl, connectionInfo.DeviceID, createSupportShortcut);
+                //CreateSupportShortcut(serverUrl, connectionInfo.DeviceID, createSupportShortcut);
+                CreateShortcut(createSupportShortcut);
 
                 return true;
             }
@@ -215,23 +217,42 @@ namespace Remotely.Agent.Installer.Win.Services
 
         }
 
-        private void CreateSupportShortcut(string serverUrl, string deviceUuid, bool createSupportShortcut)
+        private void CreateShortcut(bool createSupportShortcut)
         {
             var shell = new WshShell();
-            var shortcutLocation = Path.Combine(InstallPath, "Get Support.lnk");
+            var shortcutLocation = Path.Combine(InstallPath, "Remotely.lnk");
             var shortcut = (IWshShortcut)shell.CreateShortcut(shortcutLocation);
-            shortcut.Description = "Get IT support";
-            shortcut.IconLocation = Path.Combine(InstallPath, "Remotely_Agent.exe");
-            shortcut.TargetPath = serverUrl.TrimEnd('/') + $"/GetSupport?deviceID={deviceUuid}";
+            shortcut.Description = "Scantec Remotely support";
+            shortcut.IconLocation = Path.Combine(InstallPath, "Remotely_Desktop.exe");
+            shortcut.TargetPath = Path.Combine(InstallPath, "Remotely_Desktop.exe");
             shortcut.Save();
 
             if (createSupportShortcut)
             {
                 var systemRoot = Path.GetPathRoot(Environment.SystemDirectory);
-                var publicDesktop = Path.Combine(systemRoot, "Users", "Public", "Desktop", "Get Support.lnk");
+                var publicDesktop = Path.Combine(systemRoot, "Users", "Public", "Desktop", "Remotely.lnk");
                 FileIO.Copy(shortcutLocation, publicDesktop, true);
             }
         }
+
+        //private void CreateSupportShortcut(string serverUrl, string deviceUuid, bool createSupportShortcut)
+        //{
+        //    var shell = new WshShell();
+        //    var shortcutLocation = Path.Combine(InstallPath, "Get Support.lnk");
+        //    var shortcut = (IWshShortcut)shell.CreateShortcut(shortcutLocation);
+        //    shortcut.Description = "Get IT support";
+        //    shortcut.IconLocation = Path.Combine(InstallPath, "Remotely_Agent.exe");
+        //    shortcut.TargetPath = serverUrl.TrimEnd('/') + $"/GetSupport?deviceID={deviceUuid}";
+        //    shortcut.Save();
+
+        //    if (createSupportShortcut)
+        //    {
+        //        var systemRoot = Path.GetPathRoot(Environment.SystemDirectory);
+        //        var publicDesktop = Path.Combine(systemRoot, "Users", "Public", "Desktop", "Get Support.lnk");
+        //        FileIO.Copy(shortcutLocation, publicDesktop, true);
+        //    }
+        //}
+
         private void CreateUninstallKey()
         {
             var version = FileVersionInfo.GetVersionInfo(Path.Combine(InstallPath, "Remotely_Agent.exe"));
@@ -333,7 +354,8 @@ namespace Remotely.Agent.Installer.Win.Services
             {
                 connectionInfo = new ConnectionInfo()
                 {
-                    DeviceID = Guid.NewGuid().ToString()
+                    //DeviceID = Guid.NewGuid().ToString()
+                    DeviceID = UniqueIdGenerator.GenerateID()
                 };
             }
 

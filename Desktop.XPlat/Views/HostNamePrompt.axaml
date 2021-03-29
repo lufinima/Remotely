@@ -13,9 +13,13 @@
     <ViewModels:HostNamePromptViewModel/>
   </Window.DataContext>
   <StackPanel Margin="10">
-    <TextBlock Margin="0,0,0,5" Text="Enter the server URL:" Classes="SectionHeader"></TextBlock>
+    <TextBlock Name="HostLabel" Margin="0,0,0,5" Text="Enter the server URL:" Classes="SectionHeader"></TextBlock>
     <TextBox Name="HostTextBox" Height="25" Text="{Binding Host, Mode=TwoWay}"/>
-    <Button Classes="NormalButton" HorizontalAlignment="Right" Width="40" Height="30" Margin="0,5,0,0" IsDefault="True" 
+		<TextBlock Name="AliasLabel" Margin="0,0,0,5" Text="Device Alias:" Classes="SectionHeader"></TextBlock>
+		<TextBox Name="AliasTextBox" Height="25" Text="{Binding Alias, Mode=TwoWay}"/>
+		<TextBlock Name="GroupLabel" Margin="0,0,0,5" Text="Device Group:" Classes="SectionHeader" IsVisible="False"></TextBlock>
+		<TextBox Name="GroupTextBox" Height="25" Text="{Binding Group, Mode=TwoWay}" IsVisible="False"/>
+    <Button Classes="NormalButton" HorizontalAlignment="Right" Width="40" Height="30" Margin="0,5,0,0" IsDefault="True"
             Command="{Binding OKCommand}" 
             CommandParameter="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Window}}}" Content="OK"/>
   </StackPanel>

@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Extensions.DependencyInjection;
 using Remotely.Desktop.Core.Interfaces;
+using Remotely.Shared.Enums;
 using Remotely.Shared.Models;
+using Remotely.Shared.Services;
 using Remotely.Shared.Utilities;
 using System;
 using System.Collections.Generic;
@@ -20,18 +22,19 @@ namespace Remotely.Desktop.Core.Services
         Task DisconnectAllViewers();
         Task DisconnectViewer(Viewer viewer, bool notifyViewer);
         Task<IceServerModel[]> GetIceServers();
-        Task<string> GetSessionID();
+        Task GetSessionID(string deviceId);
         Task NotifyRequesterUnattendedReady(string requesterID);
         Task NotifyViewersRelaunchedScreenCasterReady(string[] viewerIDs);
         Task SendConnectionFailedToViewers(List<string> viewerIDs);
         Task SendConnectionRequestDenied(string viewerID);
         Task SendCtrlAltDelToAgent();
-        Task SendDeviceInfo(string serviceID, string machineName, string deviceID);
-        Task SendDtoToViewer<T>(T dto, string viewerId);
+        Task SendDeviceInfo(string serviceID, string machineName, string deviceID, string deviceAlias, string deviceGroup);
+        Task SendDtoToViewer<T>(T baseDto, string viewerId);
         Task SendIceCandidateToBrowser(string candidate, int sdpMlineIndex, string sdpMid, string viewerConnectionID);
         Task SendMessageToViewer(string viewerID, string message);
         Task SendRtcOfferToBrowser(string sdp, string viewerID, IceServerModel[] iceServers);
         Task SendViewerConnected(string viewerConnectionId);
+        //Task DeviceCameOnline(string deviceID, string organizationId);
     }
 
     public class CasterSocket : ICasterSocket
@@ -120,9 +123,9 @@ namespace Remotely.Desktop.Core.Services
             return await Connection.InvokeAsync<IceServerModel[]>("GetIceServers");
         }
 
-        public async Task<string> GetSessionID()
+        public async Task GetSessionID(string deviceId)
         {
-            return await Connection.InvokeAsync<string>("GetSessionID");
+            await Connection.SendAsync("GetSessionID", deviceId);
         }
         public Task NotifyRequesterUnattendedReady(string requesterID)
         {
@@ -154,9 +157,9 @@ namespace Remotely.Desktop.Core.Services
             return Connection.SendAsync("SendCtrlAltDelToAgent");
         }
 
-        public Task SendDeviceInfo(string serviceID, string machineName, string deviceID)
+        public async Task SendDeviceInfo(string serviceID, string machineName, string deviceID, string deviceAlias, string deviceGroup)
         {
-            return Connection.SendAsync("ReceiveDeviceInfo", serviceID, machineName, deviceID);
+            await Connection.SendAsync("ReceiveDeviceInfo", serviceID, machineName, deviceID, deviceAlias, deviceGroup);
         }
 
         public Task SendDtoToViewer<T>(T dto, string viewerId)
@@ -177,6 +180,19 @@ namespace Remotely.Desktop.Core.Services
         {
             return Connection.SendAsync("ViewerConnected", viewerConnectionId);
         }
+
+        //public async Task DeviceCameOnline(string deviceID, string organizationId)
+        //{
+        //    try
+        //    {
+        //        var device = await DeviceInformation.Create(deviceID, organizationId);
+        //        var result = await Connection.InvokeAsync<Device>("DeviceCameOnline", device);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        Logger.Write(ex, EventType.Warning);
+        //    }
+        //}
 
         private void ApplyConnectionHandlers()
         {

@@ -114,6 +114,10 @@ namespace Remotely.Server.Services
         ApiToken GetApiKey(string keyId);
 
         Task<BrandingInfo> GetBrandingInfo(string organizationId);
+        
+        Task<Organization> GetFirstOrganization();
+
+        string GetDefaultPrompt();
 
         Task<Organization> GetDefaultOrganization();
 
@@ -217,7 +221,9 @@ namespace Remotely.Server.Services
         Task<Device> UpdateDevice(DeviceSetupOptions deviceOptions, string organizationId);
 
         void UpdateDevice(string deviceID, string tag, string alias, string deviceGroupID, string notes, WebRtcSetting webRtcSetting);
-
+        
+        Task<Device> UpdateDeviceAlias(string deviceID, string alias, string deviceGroup);
+        
         void UpdateOrganizationName(string orgID, string organizationName);
 
         void UpdateTags(string deviceID, string tags);
@@ -242,15 +248,21 @@ namespace Remotely.Server.Services
         private readonly IApplicationConfig _appConfig;
         private readonly IHostEnvironment _hostEnvironment;
         private readonly IAppDbFactory _appDbFactory;
+        private readonly UserManager<RemotelyUser> _userManager;
+        private readonly IPerfexCrmService _perfexCrmService;
 
         public DataService(
             IApplicationConfig appConfig,
             IHostEnvironment hostEnvironment,
             IAppDbFactory appDbFactory)
+            UserManager<RemotelyUser> userManager,
+            IPerfexCrmService perfexCrmService)
         {
             _appConfig = appConfig;
             _hostEnvironment = hostEnvironment;
             _appDbFactory = appDbFactory;
+            _userManager = userManager;
+            _perfexCrmService = perfexCrmService;
         }
 
         public async Task AddAlert(string deviceId, string organizationID, string alertMessage, string details = null)
@@ -1174,6 +1186,19 @@ namespace Remotely.Server.Services
         public async Task<Organization> GetDefaultOrganization()
         {
             using var dbContext = _appDbFactory.GetContext();
+            return await _dbContext.Organizations.FirstOrDefaultAsync(x => x.IsDefaultOrganization);
+        }
+
+        public async Task<Organization> GetFirstOrganization()
+        {
+            return await _dbContext.Organizations.FirstOrDefaultAsync();
+        }
+
+        public string GetDefaultPrompt(string userName)
+        {
+            var userPrompt = _dbContext.Users.FirstOrDefault(x => x.UserName == userName)?.UserOptions?.ConsolePrompt;
+            return userPrompt ?? _appConfig.DefaultPrompt;
+        }
 
             return await dbContext.Organizations.FirstOrDefaultAsync(x => x.IsDefaultOrganization);
         }
@@ -1908,11 +1933,40 @@ namespace Remotely.Server.Services
                 device.DeviceGroupID = deviceGroupID;
             }
 
+            var oldAlias = device.Alias;
             device.Tags = tag;
             device.Alias = alias;
             device.Notes = notes;
             device.WebRtcSetting = webRtcSetting;
-            dbContext.SaveChanges();
+            _dbContext.SaveChanges();
+
+            if (string.IsNullOrEmpty(oldAlias) || device.Alias.CompareTo(oldAlias) != 0)
+            {
+                Task.Run(() => _perfexCrmService.UpdateContact(device));
+            }
+        }
+
+        public async Task<Device> UpdateDeviceAlias(string deviceID, string alias, string deviceGroup)
+        {
+            var device = _dbContext.Devices.Find(deviceID);
+            if (device == null)
+            {
+                return null;
+            }
+
+            if (string.IsNullOrEmpty(alias))
+            {
+                return null;
+            }
+
+            if (string.IsNullOrEmpty(device.Alias) || device.Alias.CompareTo(alias) != 0)
+            {
+                device.Alias = alias;
+                await _dbContext.SaveChangesAsync();
+                await _perfexCrmService.UpdateContact(device);
+            }
+
+            return device;
         }
 
         public async Task<Device> UpdateDevice(DeviceSetupOptions deviceOptions, string organizationId)
@@ -1929,9 +1983,16 @@ namespace Remotely.Server.Services
               x.Name.ToLower() == deviceOptions.DeviceGroupName.ToLower() &&
               x.OrganizationID == device.OrganizationID);
             device.DeviceGroup = group;
-
+            
+            var alias = device.Alias;
             device.Alias = deviceOptions.DeviceAlias;
-            await dbContext.SaveChangesAsync();
+            await _dbContext.SaveChangesAsync();
+
+            if (string.IsNullOrEmpty(alias) || alias.CompareTo(deviceOptions.DeviceAlias) != 0)
+            {
+                await _perfexCrmService.UpdateContact(device);
+            }
+
             return device;
         }
 

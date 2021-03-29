@@ -24,6 +24,8 @@ namespace Remotely.Desktop.Core
         public string RequesterID { get; private set; }
         public string ServiceID { get; private set; }
         public ConcurrentDictionary<string, Services.Viewer> Viewers { get; } = new ConcurrentDictionary<string, Services.Viewer>();
+        public string DeviceAlias { get; private set; }
+        public string DeviceGroup { get; private set; }
 
         public void InvokeScreenCastRequested(ScreenCastRequest viewerIdAndRequesterName)
         {
@@ -102,6 +104,16 @@ namespace Remotely.Desktop.Core
             {
                 OrganizationId = orgId;
             }
+            if (ArgDict.TryGetValue("alias", out var alias))
+            {
+                DeviceAlias = alias;
+            }
+            if (ArgDict.TryGetValue("group", out var group))
+            {
+                DeviceGroup = group;
+            }
+
+            DeviceID = UniqueIdGenerator.GenerateID();
         }
 
         public void UpdateHost(string host)

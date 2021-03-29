@@ -26,5 +26,17 @@ namespace Remotely.Server.API
             var organization = await _dataService.GetOrganizationByRelayCode(relayCode);
             return organization?.ID;
         }
+
+        [HttpGet("Default")]
+        public async Task<string> Default()
+        {
+            var organization = await _dataService.GetDefaultOrganization();
+            if (organization == null)
+            {
+                organization = await _dataService.GetFirstOrganization();
+            }
+
+            return organization?.ID;
+        }
     }
 }

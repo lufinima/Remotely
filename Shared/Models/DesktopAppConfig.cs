@@ -19,5 +19,9 @@ namespace Remotely.Shared.Models
             }
         }
         public string OrganizationId { get; set; } = "";
+
+        public string DeviceAlias { get; set; } = "";
+
+        public string DeviceGroup { get; set; } = "";
     }
 }
