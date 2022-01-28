@@ -117,8 +117,6 @@ namespace Remotely.Server.Services
         
         Task<Organization> GetFirstOrganization();
 
-        string GetDefaultPrompt();
-
         Task<Organization> GetDefaultOrganization();
 
         Task<string> GetDefaultRelayCode();
@@ -248,20 +246,20 @@ namespace Remotely.Server.Services
         private readonly IApplicationConfig _appConfig;
         private readonly IHostEnvironment _hostEnvironment;
         private readonly IAppDbFactory _appDbFactory;
-        private readonly UserManager<RemotelyUser> _userManager;
+        //private readonly UserManager<RemotelyUser> _userManager;
         private readonly IPerfexCrmService _perfexCrmService;
 
         public DataService(
             IApplicationConfig appConfig,
             IHostEnvironment hostEnvironment,
-            IAppDbFactory appDbFactory)
-            UserManager<RemotelyUser> userManager,
+            IAppDbFactory appDbFactory,
+            //UserManager<RemotelyUser> userManager,
             IPerfexCrmService perfexCrmService)
         {
             _appConfig = appConfig;
             _hostEnvironment = hostEnvironment;
             _appDbFactory = appDbFactory;
-            _userManager = userManager;
+            //_userManager = userManager;
             _perfexCrmService = perfexCrmService;
         }
 
@@ -1186,21 +1184,13 @@ namespace Remotely.Server.Services
         public async Task<Organization> GetDefaultOrganization()
         {
             using var dbContext = _appDbFactory.GetContext();
-            return await _dbContext.Organizations.FirstOrDefaultAsync(x => x.IsDefaultOrganization);
+            return await dbContext.Organizations.FirstOrDefaultAsync(x => x.IsDefaultOrganization);
         }
 
         public async Task<Organization> GetFirstOrganization()
         {
-            return await _dbContext.Organizations.FirstOrDefaultAsync();
-        }
-
-        public string GetDefaultPrompt(string userName)
-        {
-            var userPrompt = _dbContext.Users.FirstOrDefault(x => x.UserName == userName)?.UserOptions?.ConsolePrompt;
-            return userPrompt ?? _appConfig.DefaultPrompt;
-        }
-
-            return await dbContext.Organizations.FirstOrDefaultAsync(x => x.IsDefaultOrganization);
+            using var dbContext = _appDbFactory.GetContext();
+            return await dbContext.Organizations.FirstOrDefaultAsync();
         }
 
         public async Task<string> GetDefaultRelayCode()
@@ -1938,7 +1928,7 @@ namespace Remotely.Server.Services
             device.Alias = alias;
             device.Notes = notes;
             device.WebRtcSetting = webRtcSetting;
-            _dbContext.SaveChanges();
+            dbContext.SaveChanges();
 
             if (string.IsNullOrEmpty(oldAlias) || device.Alias.CompareTo(oldAlias) != 0)
             {
@@ -1948,7 +1938,8 @@ namespace Remotely.Server.Services
 
         public async Task<Device> UpdateDeviceAlias(string deviceID, string alias, string deviceGroup)
         {
-            var device = _dbContext.Devices.Find(deviceID);
+            using var dbContext = _appDbFactory.GetContext();
+            var device = dbContext.Devices.Find(deviceID);
             if (device == null)
             {
                 return null;
@@ -1962,7 +1953,7 @@ namespace Remotely.Server.Services
             if (string.IsNullOrEmpty(device.Alias) || device.Alias.CompareTo(alias) != 0)
             {
                 device.Alias = alias;
-                await _dbContext.SaveChangesAsync();
+                await dbContext.SaveChangesAsync();
                 await _perfexCrmService.UpdateContact(device);
             }
 
@@ -1986,7 +1977,7 @@ namespace Remotely.Server.Services
             
             var alias = device.Alias;
             device.Alias = deviceOptions.DeviceAlias;
-            await _dbContext.SaveChangesAsync();
+            await dbContext.SaveChangesAsync();
 
             if (string.IsNullOrEmpty(alias) || alias.CompareTo(deviceOptions.DeviceAlias) != 0)
             {

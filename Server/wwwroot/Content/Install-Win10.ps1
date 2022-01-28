@@ -78,23 +78,23 @@ function Install-Remotely {
 	if ((Test-Path -Path "$InstallPath") -and (Test-Path -Path "$InstallPath\ConnectionInfo.json")) {
 		$ConnectionInfo = Get-Content -Path "$InstallPath\ConnectionInfo.json" | ConvertFrom-Json
 		if ($ConnectionInfo -ne $null) {
-			$ConnectionInfo.Host = $HostName
-			$ConnectionInfo.OrganizationID = $Organization
-			$ConnectionInfo.ServerVerificationToken = ""
+		 	$ConnectionInfo.Host = $HostName
+		 	$ConnectionInfo.OrganizationID = $Organization
+		 	$ConnectionInfo.ServerVerificationToken = ""
 		}
 	}
 	else {
 		New-Item -ItemType Directory -Path "$InstallPath" -Force
 	}
 
-	if ($ConnectionInfo -eq $null) {
-		$ConnectionInfo = @{
-			DeviceID = (New-Guid).ToString();
-			Host = $HostName;
-			OrganizationID = $Organization;
-			ServerVerificationToken = "";
-		}
-	}
+	# if ($ConnectionInfo -eq $null) {
+	# 	$ConnectionInfo = @{
+	# 		DeviceID = (New-Guid).ToString();
+	# 		Host = $HostName;
+	# 		OrganizationID = $Organization;
+	# 		ServerVerificationToken = "";
+	# 	}
+	# }
 
 	if ($HostName.EndsWith("/")) {
 		$HostName = $HostName.Substring(0, $HostName.LastIndexOf("/"))
@@ -124,16 +124,16 @@ function Install-Remotely {
 
 	New-Item -ItemType File -Path "$InstallPath\ConnectionInfo.json" -Value (ConvertTo-Json -InputObject $ConnectionInfo) -Force
 
-	if ($DeviceAlias -or $DeviceGroup) {
-		$DeviceSetupOptions = @{
-			DeviceAlias = $DeviceAlias;
-			DeviceGroup = $DeviceGroup;
-			OrganizationID = $Organization;
-			DeviceID = $ConnectionInfo.DeviceID;
-		}
-
-		Invoke-RestMethod -Method Post -ContentType "application/json" -Uri "$HostName/api/devices" -Body $DeviceSetupOptions -UseBasicParsing
-	}
+	#if ($DeviceAlias -or $DeviceGroup) {
+	#	$DeviceSetupOptions = @{
+	#		DeviceAlias = $DeviceAlias;
+	#		DeviceGroup = $DeviceGroup;
+	#		OrganizationID = $Organization;
+	#		DeviceID = $ConnectionInfo.DeviceID;
+	#	}
+	#
+	#	Invoke-RestMethod -Method Post -ContentType "application/json" -Uri "$HostName/api/devices" -Body $DeviceSetupOptions -UseBasicParsing
+	#}
 
 	New-Service -Name "Remotely_Service" -BinaryPathName "$InstallPath\Remotely_Agent.exe" -DisplayName "Remotely Service" -StartupType Automatic -Description "Background service that maintains a connection to the Remotely server.  The service is used for remote support and maintenance by this computer's administrators."
 	Start-Process -FilePath "cmd.exe" -ArgumentList "/c sc.exe failure `"Remotely_Service`" reset=5 actions=restart/5000" -Wait -WindowStyle Hidden

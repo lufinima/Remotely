@@ -14,6 +14,7 @@ namespace Remotely.Server.Hubs
     public class CasterHub : Hub
     {
         private readonly IApplicationConfig _appConfig;
+        private readonly IDataService _dataService;
         private readonly IHubContext<AgentHub> _agentHubContext;
         private readonly ICircuitManager _circuitManager;
 
@@ -27,6 +28,7 @@ namespace Remotely.Server.Hubs
             ViewerHubContext = viewerHubContext;
             _agentHubContext = agentHubContext;
             _appConfig = appConfig;
+            _dataService = dataService;
         }
 
         public static ConcurrentDictionary<string, RCSessionInfo> SessionInfoList { get; } = new ConcurrentDictionary<string, RCSessionInfo>();
@@ -63,7 +65,7 @@ namespace Remotely.Server.Hubs
             return _appConfig.IceServers;
         }
 
-        public Task GetSessionID(string deviceId)
+        public string GetSessionID(string deviceId)
         {
             //var random = new Random();
             //var sessionID = "";
@@ -71,8 +73,8 @@ namespace Remotely.Server.Hubs
             //{
             //    sessionID += random.Next(0, 999).ToString().PadLeft(3, '0');
             //}
-            var sessionID = deviceId;
-            Context.Items["SessionID"] = sessionID;
+            var sessionId = deviceId;
+            Context.Items["SessionID"] = sessionId;
 
             SessionInfoList[Context.ConnectionId].AttendedSessionID = sessionId;
 
@@ -127,7 +129,7 @@ namespace Remotely.Server.Hubs
             SessionInfo.DeviceID = deviceID;
             if (!string.IsNullOrEmpty(deviceAlias))
             {
-                DataService.UpdateDeviceAlias(deviceID, deviceAlias, deviceGroup);
+                _dataService.UpdateDeviceAlias(deviceID, deviceAlias, deviceGroup);
             }
             return Task.CompletedTask;
         }

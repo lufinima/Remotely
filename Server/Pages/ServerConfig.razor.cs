@@ -108,6 +108,15 @@ namespace Remotely.Server.Pages
 
         [Display(Name = "Use WebRTC")]
         public bool UseWebRtc { get; set; }
+
+        [Display(Name = "PerfexCRM API Url")]
+        public string PerfexApiUrl { get; set; }
+
+        [Display(Name = "PerfexCRM API Key")]
+        public string PerfexApiKey { get; set; }
+
+        [Display(Name = "PerfexCRM Remotely Field ID")]
+        public string PerfexRemotelyFieldId { get; set; }
     }
 
     public class ConnectionStringsModel

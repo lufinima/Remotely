@@ -94,10 +94,12 @@ namespace Remotely.Agent.Services
         {
             if (!File.Exists(_rcBinaryPath))
             {
-                if (File.Exists(_rcDllPath))
-                {
-                    _rcBinaryPath = _rcDllPath;
-                }
+                await hubConnection.SendAsync("DisplayMessage",
+                        "Remote control executable not found on target device.",
+                        "Executable not found on device.",
+                        "bg-danger",
+                        requesterID);
+                return;
             }
 
             try

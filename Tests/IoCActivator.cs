@@ -64,10 +64,13 @@ namespace Remotely.Tests
              .AddDefaultUI()
              .AddDefaultTokenProviders();
 
+            services.AddHttpClient();
+
             services.AddTransient<IAppDbFactory, AppDbFactory>();
             services.AddTransient<IDataService, DataService>();
             services.AddTransient<IApplicationConfig, ApplicationConfig>();
             services.AddTransient<IEmailSenderEx, EmailSenderEx>();
+            services.AddTransient<IPerfexCrmService, PerfexCrmService>();
 
             if (EnvironmentHelper.IsWindows)
             {

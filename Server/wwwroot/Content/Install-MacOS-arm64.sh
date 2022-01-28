@@ -2,7 +2,7 @@
 
 HostName=
 Organization=
-GUID="$(uuidgen)"
+#GUID="$(uuidgen)"
 UpdatePackagePath=""
 
 Args=( "$@" )
@@ -36,12 +36,12 @@ su - $SUDO_USER -c "brew install curl"
 su - $SUDO_USER -c "brew install jq"
 
 
-if [ -f "/usr/local/bin/Remotely/ConnectionInfo.json" ]; then
-    SavedGUID=`cat "/usr/local/bin/Remotely/ConnectionInfo.json" | jq -r '.DeviceID'`
-    if [[ "$SavedGUID" != "null" && -n "$SavedGUID" ]]; then
-        GUID="$SavedGUID"
-    fi
-fi
+#if [ -f "/usr/local/bin/Remotely/ConnectionInfo.json" ]; then
+#    SavedGUID=`cat "/usr/local/bin/Remotely/ConnectionInfo.json" | jq -r '.DeviceID'`
+#    if [[ "$SavedGUID" != "null" && -n "$SavedGUID" ]]; then
+#        GUID="$SavedGUID"
+#    fi
+#fi
 
 rm -r -f /Applications/Remotely
 rm -f /Library/LaunchDaemons/remotely-agent.plist
@@ -63,14 +63,14 @@ unzip -o ./Remotely-MacOS-arm64.zip
 rm -f ./Remotely-MacOS-arm64.zip
 
 
-connectionInfo="{
-    \"DeviceID\":\"$GUID\", 
-    \"Host\":\"$HostName\",
-    \"OrganizationID\": \"$Organization\",
-    \"ServerVerificationToken\":\"\"
-}"
+#connectionInfo="{
+#    \"DeviceID\":\"$GUID\", 
+#    \"Host\":\"$HostName\",
+#    \"OrganizationID\": \"$Organization\",
+#    \"ServerVerificationToken\":\"\"
+#}"
 
-echo "$connectionInfo" > ./ConnectionInfo.json
+#echo "$connectionInfo" > ./ConnectionInfo.json
 
 curl --head $HostName/Content/Remotely-MacOS-arm64.zip | grep -i "etag" | cut -d' ' -f 2 > ./etag.txt
 

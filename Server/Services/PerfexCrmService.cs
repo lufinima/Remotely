@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Remotely.Server.Models;
+using Remotely.Shared.Enums;
 using Remotely.Shared.Models;
 using System;
 using System.Collections.Generic;
@@ -42,7 +43,7 @@ namespace Remotely.Server.Services
             var id = await GetContactId(device.Alias);
             if (string.IsNullOrEmpty(id))
             {
-                dataService.WriteEvent($"PerfexCRM No contact id for email: {id}", Shared.Enums.EventType.Warning, device.OrganizationID);
+                dataService.WriteEvent($"PerfexCRM No contact id for email: {id}", EventType.Warning, device.OrganizationID);
                 _logger.LogWarning("No contact id for email {0}", device.Alias);
                 return;
             }
@@ -83,7 +84,7 @@ namespace Remotely.Server.Services
                     var content = await response.Content.ReadAsStringAsync();
                     if (response.IsSuccessStatusCode)
                     {
-                        dataService.WriteEvent($"PerfexCRM Contact [{id}] Updated", Shared.Enums.EventType.Info, device.OrganizationID);
+                        dataService.WriteEvent($"PerfexCRM Contact [{id}] Updated", EventType.Info, device.OrganizationID);
                     }
                     _logger.LogInformation("Contact Update Response: {0}", content);
 
@@ -97,7 +98,7 @@ namespace Remotely.Server.Services
             }
             else
             {
-                dataService.WriteEvent("PerfexCrm Address null or wrong format", Shared.Enums.EventType.Warning, device.OrganizationID);
+                dataService.WriteEvent("PerfexCrm Address null or wrong format", EventType.Warning, device.OrganizationID);
                 _logger.LogWarning("PerfexCrm Address null or wrong format: {0}", _appConfig.PerfexApiUrl);
             }
             return;

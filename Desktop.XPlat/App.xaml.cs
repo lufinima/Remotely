@@ -111,7 +111,7 @@ namespace Remotely.Desktop.XPlat
             {
                 var casterSocket = Services.GetRequiredService<ICasterSocket>();
                 await casterSocket.Connect(conductor.Host).ConfigureAwait(false);
-                await casterSocket.SendDeviceInfo(conductor.ServiceID, Environment.MachineName, conductor.DeviceID).ConfigureAwait(false);
+                await casterSocket.SendDeviceInfo(conductor.ServiceID, Environment.MachineName, conductor.DeviceID, conductor.DeviceAlias, conductor.DeviceGroup).ConfigureAwait(false);
                 await casterSocket.NotifyRequesterUnattendedReady(conductor.RequesterID).ConfigureAwait(false);
                 Services.GetRequiredService<IdleTimer>().Start();
                 Services.GetRequiredService<IClipboardService>().BeginWatching();

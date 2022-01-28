@@ -22,7 +22,7 @@ namespace Remotely.Desktop.Core.Services
         Task DisconnectAllViewers();
         Task DisconnectViewer(Viewer viewer, bool notifyViewer);
         Task<IceServerModel[]> GetIceServers();
-        Task GetSessionID(string deviceId);
+        Task<string> GetSessionID(string deviceId);
         Task NotifyRequesterUnattendedReady(string requesterID);
         Task NotifyViewersRelaunchedScreenCasterReady(string[] viewerIDs);
         Task SendConnectionFailedToViewers(List<string> viewerIDs);
@@ -123,9 +123,9 @@ namespace Remotely.Desktop.Core.Services
             return await Connection.InvokeAsync<IceServerModel[]>("GetIceServers");
         }
 
-        public async Task GetSessionID(string deviceId)
+        public async Task<string> GetSessionID(string deviceId)
         {
-            await Connection.SendAsync("GetSessionID", deviceId);
+            return await Connection.InvokeAsync<string>("GetSessionID", deviceId);
         }
         public Task NotifyRequesterUnattendedReady(string requesterID)
         {

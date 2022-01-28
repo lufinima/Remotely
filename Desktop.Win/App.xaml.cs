@@ -207,7 +207,7 @@ namespace Remotely.Desktop.Win
             CursorIconWatcher = Services.GetRequiredService<ICursorIconWatcher>();
 
             await _casterSocket.Connect(_conductor.Host);
-            await _casterSocket.SendDeviceInfo(_conductor.ServiceID, Environment.MachineName, _conductor.DeviceID);
+            await _casterSocket.SendDeviceInfo(_conductor.ServiceID, Environment.MachineName, _conductor.DeviceID, _conductor.DeviceAlias, _conductor.DeviceGroup);
 
             if (Win32Interop.GetCurrentDesktop(out var currentDesktopName))
             {

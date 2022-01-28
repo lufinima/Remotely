@@ -45,7 +45,7 @@
 </div>
 
 
-<div class="row mb-3">
+@*<div class="row mb-3">
     <h4>Installable Instant Support Clients</h4>
     <div class="text-info col-sm-12 pl-0 mb-2">
         Light-weight, self-updating quick support clients.
@@ -78,7 +78,7 @@
         </p>
     </div>
 
-</div>
+</div>*@
 
 <div class="row">
     <h4>Resident Agents</h4>
@@ -116,7 +116,7 @@
                     -install
                     -quiet
                     -organizationid "0b3d706b-9c5d-41e6-8ae9-5720d16324e6"
-                    -serverurl "https://remotely.mytechshop.com"
+                    -serverurl "https://remotely.scantec.pt"
                 </code>
             </p>
             <p>
@@ -132,7 +132,7 @@
                     -install
                     -quiet
                     -organizationid "0b3d706b-9c5d-41e6-8ae9-5720d16324e6"
-                    -serverurl "https://remotely.mytechshop.com"
+                    -serverurl "https://remotely.scantec.pt"
                     -path "[path]\Remotely-Win10-x64.zip"
                 </code>
             </p>
@@ -142,7 +142,7 @@
                 <code class="label label-default small">
                     Remotely_Installer.exe -install -quiet -supportshortcut
                     -organizationid "0b3d706b-9c5d-41e6-8ae9-5720d16324e6"
-                    -serverurl "https://remotely.mytechshop.com"
+                    -serverurl "https://remotely.scantec.pt"
                     -devicegroup "Customer Group 1"
                     -devicealias "Front Desk"
                     -deviceuuid "eebb4d87-5459-4976-989e-a7876dffc69c"
@@ -213,7 +213,7 @@
 
 @code {
     private string _organizationId;
-    private bool _isServerUrlEmbedded;
+    //private bool _isServerUrlEmbedded;
     private bool _isAuthenticated;
 
     protected override async Task OnInitializedAsync()
@@ -233,26 +233,26 @@
             _organizationId = (await DataService.GetDefaultOrganization())?.ID;
         }
 
-        var appFilePath = System.IO.Path.Combine(
-            HostEnv.WebRootPath,
-            "Content",
-            "Win-x64",
-            "ClickOnce",
-            "Remotely_Desktop.application");
+        //var appFilePath = System.IO.Path.Combine(
+        //    HostEnv.WebRootPath,
+        //    "Content",
+        //    "Win-x64",
+        //    "ClickOnce",
+        //    "Remotely_Desktop.application");
 
-        try
-        {
-            await ClickOnceMiddleware.AppFileLock.WaitAsync();
-            var appContent = await System.IO.File.ReadAllTextAsync(appFilePath);
-            _isServerUrlEmbedded = appContent.Contains(NavManager.BaseUri.TrimEnd('/'));
-        }
-        catch (Exception ex)
-        {
-            Logger.LogWarning(ex, "Error while checking ClickOnce file.");
-        }
-        finally
-        {
-            ClickOnceMiddleware.AppFileLock.Release();
-        }
+        //try
+        //{
+        //    await ClickOnceMiddleware.AppFileLock.WaitAsync();
+        //    var appContent = await System.IO.File.ReadAllTextAsync(appFilePath);
+        //    _isServerUrlEmbedded = appContent.Contains(NavManager.BaseUri.TrimEnd('/'));
+        //}
+        //catch (Exception ex)
+        //{
+        //    Logger.LogWarning(ex, "Error while checking ClickOnce file.");
+        //}
+        //finally
+        //{
+        //    ClickOnceMiddleware.AppFileLock.Release();
+        //}
     }
 }

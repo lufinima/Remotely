@@ -211,7 +211,7 @@ namespace Remotely.Desktop.Win.ViewModels
             var sessionId = await _casterSocket.GetSessionID(_conductor.DeviceID);
 
             var formattedSessionID = "";
-            if (uint.TryParse(sessionID, out var id))
+            if (uint.TryParse(sessionId, out var id))
             {
                 formattedSessionID = id.ToString("### ### ### ###");
             }
