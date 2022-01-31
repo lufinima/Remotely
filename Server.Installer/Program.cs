@@ -21,7 +21,7 @@ namespace Server.Installer
             Console.ForegroundColor = ConsoleColor.Cyan;
             Console.WriteLine(AppConstants.RemotelyAscii);
             Console.ForegroundColor = ConsoleColor.Gray;
-            Console.WriteLine("(https://remotely.one)");
+            Console.WriteLine("(https://remotely.scantec.pt)");
             Console.WriteLine();
             Console.WriteLine();
 
@@ -89,7 +89,7 @@ namespace Server.Installer
 
             while (cliParams.ServerUrl is null)
             {
-                var url = ConsoleHelper.ReadLine("What is your server's public URL (e.g. https://app.remotely.one)?").Trim();
+                var url = ConsoleHelper.ReadLine("What is your server's public URL (e.g. https://remotely.scantec.pt)?").Trim();
                 if (Uri.TryCreate(url, UriKind.Absolute, out var serverUrl))
                 {
                     cliParams.ServerUrl = serverUrl;
@@ -157,7 +157,7 @@ namespace Server.Installer
                                     cliParams.Reference = await githubApi.GetLatestReleaseTag();
                                     break;
                                 case 1:
-                                    cliParams.Reference = "master";
+                                    cliParams.Reference = "dev";
                                     break;
                                 case 2:
                                     ConsoleHelper.WriteLine("Enter the GitHub branch or tag name from which to build " +
@@ -270,7 +270,7 @@ namespace Server.Installer
                                     cliParams.ServerUrl = result;
                                     continue;
                                 }
-                                ConsoleHelper.WriteError("--server-url parameter is invalid.  Must be a valid URL (e.g. https://app.remotely.one).");
+                                ConsoleHelper.WriteError("--server-url parameter is invalid.  Must be a valid URL (e.g. https://remotely.scantec.pt).");
                                 return false;
                             }
                         case "--install-directory":
@@ -333,7 +333,7 @@ namespace Server.Installer
             ConsoleHelper.WriteLine("\t--github-pat, -p    The GitHub Personal Access Token to use for authentication.  " +
                 "Create one at ttps://github.com/settings/tokens.", 1);
 
-            ConsoleHelper.WriteLine("\t--server-url, -s    The public URL where your Remotely server will be accessed (e.g. https://app.remotely.one).", 1);
+            ConsoleHelper.WriteLine("\t--server-url, -s    The public URL where your Remotely server will be accessed (e.g. https://remotely.scantec.pt).", 1);
 
             ConsoleHelper.WriteLine("\t--install-directory, -i    The directory path where the server files will be installed (e.g. /var/www/remotely/).", 1);
             
@@ -351,10 +351,10 @@ namespace Server.Installer
                 "0 = Caddy on Ubuntu.  1 = Nginx on Ubuntu.  2 = Caddy on CentOS.  3 = Nginx on CentOS.  4 = IIS on Windows Server 2016+.", 1);
 
             ConsoleHelper.WriteLine("Example (build latest release):");
-            ConsoleHelper.WriteLine("sudo ./Remotely_Server_Installer -b false -u lucent-sea -p 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 -s https://app.remotely.one -i /var/www/remotely/ -r latest -c true -w 0", 1);
+            ConsoleHelper.WriteLine("sudo ./Remotely_Server_Installer -b false -u lufinima -p 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 -s https://remotely.scantec.pt -i /var/www/remotely/ -r dev -c true -w 0", 1);
 
             ConsoleHelper.WriteLine("Example (use pre-built package):");
-            ConsoleHelper.WriteLine("sudo ./Remotely_Server_Installer -b true -s https://app.remotely.one -i /var/www/remotely/ -w 0");
+            ConsoleHelper.WriteLine("sudo ./Remotely_Server_Installer -b true -s https://remotely.scantec.pt -i /var/www/remotely/ -w 0");
         }
     }
 }
