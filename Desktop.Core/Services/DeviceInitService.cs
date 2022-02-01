@@ -90,7 +90,8 @@ namespace Remotely.Desktop.Core.Services
                             }
                         }
                     }
-                } else
+                } 
+                else
                 {
                     using var response = await httpClient.GetAsync($"{host.TrimEnd('/')}/api/Relay/Default").ConfigureAwait(false);
                     if (response.IsSuccessStatusCode)

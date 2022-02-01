@@ -10,9 +10,12 @@ using Remotely.Shared.Models;
 using Remotely.Shared.Utilities;
 using Remotely.Shared.Win32;
 using System;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Json;
+using System.Security.Principal;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
@@ -30,7 +33,8 @@ namespace Remotely.Desktop.Win
         private ICasterSocket _casterSocket { get; set; }
         private Conductor _conductor { get; set; }
         private ICursorIconWatcher CursorIconWatcher { get; set; }
-        private IServiceProvider Services => ServiceContainer.Instance;
+        private static IServiceProvider Services => ServiceContainer.Instance;
+        public static int ProcessID { get; private set; }
 
         public async void CursorIconWatcher_OnChange(object sender, CursorInfo cursor)
         {
@@ -170,6 +174,7 @@ namespace Remotely.Desktop.Win
                 {
                     Dispatcher.Invoke(() =>
                     {
+                        StartAgent();
                         MainWindow = new MainWindow();
                         MainWindow.Show();
                     });
@@ -252,9 +257,100 @@ namespace Remotely.Desktop.Win
                 Exit += (s, a) =>
                 {
                     appExitEvent.Set();
+                    if (ProcessID > 0)
+                    {
+                        var process = Process.GetProcessById(ProcessID);
+                        process?.Kill();
+                    }
                 };
             });
             appExitEvent.Wait();
+        }
+
+        private static void StartAgent()
+        {
+            var conductor = Services.GetRequiredService<Conductor>();
+            string agentPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, EnvironmentHelper.AgentExecutableFileName);
+
+            if (Process.GetProcessesByName(Path.GetFileNameWithoutExtension(agentPath)).Length > 0)
+            {
+                Logger.Write("Remotely_Agent alreading running", Shared.Enums.EventType.Info);
+                return;
+            }
+
+            if (!File.Exists(agentPath))
+            {
+                Logger.Write($"Remotely_Agent not found at: {agentPath}", Shared.Enums.EventType.Warning);
+                agentPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Remotely_Agent.dll");
+                if (!File.Exists(agentPath))
+                {
+                    Logger.Write($"Remotely_Agent not found at: {agentPath}", Shared.Enums.EventType.Warning);
+                    return;
+                }
+            }
+
+            var cfgSrv = Services.GetService<IConfigService>();
+            var config = cfgSrv.GetConfig();
+
+            var host = conductor?.Host;
+            if (string.IsNullOrWhiteSpace(host))
+            {
+                host = config.Host;
+            }
+
+            var orgId = conductor?.OrganizationId;
+            if (string.IsNullOrWhiteSpace(orgId))
+            {
+                orgId = config.OrganizationId;
+            }
+
+            try
+            {
+                if (WindowsIdentity.GetCurrent().IsSystem)
+                {
+                    var result = Win32Interop.OpenInteractiveProcess($"{agentPath} " +
+                                $"-device \"{conductor.DeviceID}\" " +
+                                $"-host \"{host}\" " +
+                                $"-organization \"{orgId}\" ",
+                        targetSessionId: -1,
+                        forceConsoleSession: false,
+                        desktopName: "default",
+                        hiddenWindow: true,
+                        out var procInfo);
+
+                    ProcessID = result ? procInfo.dwProcessId : 0;
+                }
+                else
+                {
+                    var p = new Process
+                    {
+                        StartInfo = new ProcessStartInfo(agentPath)
+                        {
+                            Arguments = $"-device \"{conductor.DeviceID}\" -host \"{host}\" -organization \"{orgId}\"",
+                            WorkingDirectory = AppDomain.CurrentDomain.BaseDirectory,
+                            CreateNoWindow = true,
+                            UseShellExecute = false,
+                            WindowStyle = ProcessWindowStyle.Hidden
+                        }
+                    };
+
+                    ProcessID = p.Start() ? p.Id : 0;
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Write(ex);
+            }
+
+            if (ProcessID > 0)
+            {
+                Logger.Write($"Agent app started.  Process ID: {ProcessID}");
+            }
+            else
+            {
+                Logger.Write($"Agent app did not start successfully.");
+                return;
+            }
         }
     }
 }
