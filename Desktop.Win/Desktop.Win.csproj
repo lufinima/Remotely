@@ -14,9 +14,10 @@
     <Authors>Jared Goodwin</Authors>
     <Company>Translucency Software</Company>
     <Product>Remotely Desktop</Product>
-    <PackageProjectUrl>https://remotely.one</PackageProjectUrl>
+    <PackageProjectUrl>https://remotely.scantec.pt</PackageProjectUrl>
     <Platforms>AnyCPU;x86;x64</Platforms>
     <StartupObject>Remotely.Desktop.Win.App</StartupObject>
+	<DebugType>embedded</DebugType>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">

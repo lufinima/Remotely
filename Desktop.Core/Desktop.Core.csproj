@@ -5,7 +5,7 @@
     <RootNamespace>Remotely.Desktop.Core</RootNamespace>
     <AssemblyName>Remotely_Desktop.Core</AssemblyName>
     <Platforms>AnyCPU;x64;x86</Platforms>
-		<DebugType>embedded</DebugType>
+	<DebugType>embedded</DebugType>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

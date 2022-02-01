@@ -11,12 +11,12 @@
     <Product>Remotely Agent</Product>
     <Company>Translucency Software</Company>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
-    <PackageProjectUrl>https://remotely.one</PackageProjectUrl>
+    <PackageProjectUrl>https://remotely.scantec.pt</PackageProjectUrl>
     <Platforms>AnyCPU;x86;x64</Platforms>
     <AssemblyName>Remotely_Agent</AssemblyName>
     <RootNamespace>Remotely.Agent</RootNamespace>
     <ApplicationIcon>Assets\favicon.ico</ApplicationIcon>
-		<DebugType>embedded</DebugType>
+	<DebugType>embedded</DebugType>
   </PropertyGroup>
 
   <ItemGroup>

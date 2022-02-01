@@ -6,8 +6,8 @@
     <AssemblyName>Remotely_Desktop</AssemblyName>
     <RootNamespace>Remotely.Desktop.XPlat</RootNamespace>
     <Platforms>AnyCPU;x64;x86</Platforms>
-		<RuntimeIdentifier>linux-x64</RuntimeIdentifier>
-		<DebugType>embedded</DebugType>
+	<RuntimeIdentifier>linux-x64</RuntimeIdentifier>
+	<DebugType>embedded</DebugType>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -29,7 +29,7 @@
     <Product>Remotely Desktop</Product>
     <Description>Desktop client for allowing your IT admin to provide remote support.</Description>
     <Copyright>Copyright ©  2021 Translucency Software</Copyright>
-    <PackageProjectUrl>https://remotely.one</PackageProjectUrl>
+    <PackageProjectUrl>https://remotely.scantec.pt</PackageProjectUrl>
   </PropertyGroup>
   <ItemGroup>
     <Compile Update="**\*.xaml.cs">
